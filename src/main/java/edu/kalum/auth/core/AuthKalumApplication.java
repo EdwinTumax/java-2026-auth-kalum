@@ -1,7 +1,9 @@
 package edu.kalum.auth.core;
 
 import edu.kalum.auth.core.model.Role;
+import edu.kalum.auth.core.model.Student;
 import edu.kalum.auth.core.model.User;
+import io.vertx.core.json.JsonObject;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,20 +15,12 @@ public class AuthKalumApplication implements CommandLineRunner {
 		SpringApplication.run(AuthKalumApplication.class, args);
 	}
 
-
 	@Override
 	public void run(String... args) throws Exception {
-
-		User edwin = new User();
-		edwin.setUsername("edwintumax");
-		edwin.setPassword("123");
-
-		Role role = new Role();
-		role.setId(1);
-		role.setName("ROLE_ADMIN");
-
-		edwin.setRole(role);
-
-		System.out.println("Detalle de usuario: ".concat(edwin.getUsername()).concat(" ").concat(edwin.getPassword()).concat(" ").concat(edwin.getRole().getName()));
+		Role role = new Role(1, "ROLE_ADMIN");
+		User edwin = new User("edwintumax","123", role);
+		Student jose = new Student();
+		System.out.println("Detalle de usuario: ".concat(JsonObject.mapFrom(edwin).encodePrettily()));
+		System.out.println("Detalle de estudiante: ".concat(JsonObject.mapFrom(jose).encodePrettily()));
 	}
 }

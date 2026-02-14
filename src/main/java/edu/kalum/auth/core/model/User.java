@@ -1,11 +1,19 @@
 package edu.kalum.auth.core.model;
 
-public class User {
+public class User extends Person {
     private String username;
     private String password;
     private Role role;
 
-    // POO Encasulamiento (get/set) -> accesores y modificadores
+    public User() {
+    }
+
+    public User(String username, String password, Role role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
     public String getUsername() {
         return this.username;
     }
