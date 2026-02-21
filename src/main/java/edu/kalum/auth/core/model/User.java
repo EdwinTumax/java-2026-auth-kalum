@@ -1,5 +1,7 @@
 package edu.kalum.auth.core.model;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 public class User extends Person {
     private String username;
     private String password;
@@ -48,6 +50,10 @@ public class User extends Person {
         this.role = role;
     }
 
+
+    public boolean checkPassword(String rawPassword, PasswordEncoder encoder){
+        return encoder.matches(rawPassword, password);
+    }
 
 
 }
