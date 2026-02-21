@@ -6,9 +6,19 @@ public class User extends Person {
     private Role role;
 
     public User() {
+        super();
     }
 
-    public User(String username, String password, Role role) {
+    @Override
+    public boolean authenticate() {
+        if(username.equals("edwintumax") && password.equals("123")) {
+            return true;
+        }
+        return false;
+    }
+
+    public User(String id, String lastname, String firstName, String email, String addesss, String phone, String username, String password, Role role) {
+        super(id,lastname,firstName,addesss,phone,email);
         this.username = username;
         this.password = password;
         this.role = role;
@@ -37,5 +47,7 @@ public class User extends Person {
     public void setRole(Role role) {
         this.role = role;
     }
+
+
 
 }

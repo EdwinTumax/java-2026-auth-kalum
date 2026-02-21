@@ -1,6 +1,6 @@
 package edu.kalum.auth.core.model;
 
-public class Person {
+public abstract class Person {
     private String id;
     private String lastname;
     private String firstname;
@@ -67,4 +67,6 @@ public class Person {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public abstract boolean authenticate();
 }
