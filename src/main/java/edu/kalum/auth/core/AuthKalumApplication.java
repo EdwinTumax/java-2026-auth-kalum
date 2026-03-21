@@ -1,21 +1,18 @@
 package edu.kalum.auth.core;
 
-import edu.kalum.auth.core.model.Person;
-import edu.kalum.auth.core.model.Role;
-import edu.kalum.auth.core.model.User;
-import io.vertx.core.json.JsonObject;
+import edu.kalum.auth.core.verticles.MainVerticle;
+import io.vertx.core.Vertx;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @SpringBootApplication
 public class AuthKalumApplication implements CommandLineRunner {
 
-	private static PasswordEncoder encoder;
+	@Autowired
+	private MainVerticle mainVerticle;
 
 	public static void main(String[] args) {
 		SpringApplication.run(AuthKalumApplication.class, args);
@@ -23,6 +20,10 @@ public class AuthKalumApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		Vertx.vertx().deployVerticle(mainVerticle)
+				.onSuccess(id -> System.out.print("Deployment verticle id " + id))
+				.onFailure(error -> System.out.print("Failed deployment verticle ".concat(error.getMessage())));
+
 
 	}
 }
