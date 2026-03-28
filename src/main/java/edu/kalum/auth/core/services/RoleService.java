@@ -1,5 +1,6 @@
 package edu.kalum.auth.core.services;
 
+import edu.kalum.auth.core.model.Role;
 import edu.kalum.auth.core.repository.RoleRepository;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -16,5 +17,6 @@ public class RoleService {
     public Future<List<JsonObject>> findAll() {
         return roleRepository.findAll();
     }
+    public Future<Role> findByName(String name) { return roleRepository.findByName(name); }
 
 }

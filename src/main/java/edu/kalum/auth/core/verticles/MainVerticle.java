@@ -18,7 +18,6 @@ public class MainVerticle extends AbstractVerticle {
         MySQLPool client = MySQLPoolConfig.createPool(vertx);
         RoleRepository roleRepository = new RoleRepository(client);
         RoleService roleService = new RoleService(roleRepository);
-
         Router router = ApiRouter.create(roleService, vertx);
 
         vertx.createHttpServer()

@@ -1,11 +1,13 @@
 package edu.kalum.auth.core.repository;
 
+import edu.kalum.auth.core.model.Role;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,4 +39,27 @@ public class RoleRepository {
                 });
         return promise.future();
     }
+
+    public Future<Role> findByName(String name) {
+        Promise<Role> promise = Promise.promise();
+        client.preparedQuery("select role_id, name from roles where name = ?")
+                .execute(Tuple.of(name), asyncResult -> {
+                    if(asyncResult.failed()) {
+                        promise.fail(asyncResult.cause());
+                        return;
+                    }
+                    RowSet<Row> rows = asyncResult.result();
+                    if(!rows.iterator().hasNext()) {
+                        promise.complete(null);
+                        return;
+                    }
+                    Row row = rows.iterator().next();
+                    Role role = new Role();
+                    role.setRoleId(row.getString("role_id"));
+                    role.setName(row.getString("name"));
+                    promise.complete(role);
+                });
+        return promise.future();
+    }
+
 }

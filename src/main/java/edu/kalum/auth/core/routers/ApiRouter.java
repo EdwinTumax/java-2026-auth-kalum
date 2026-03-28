@@ -14,6 +14,7 @@ public class ApiRouter {
 
         //roles
         router.get(API_PATH + "/roles").handler(roleHandler::getAll);
+        router.get(API_PATH + "/roles/search").handler(roleHandler::getByName);
 
         return router;
     }

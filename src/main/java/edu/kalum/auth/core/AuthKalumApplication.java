@@ -23,7 +23,5 @@ public class AuthKalumApplication implements CommandLineRunner {
 		Vertx.vertx().deployVerticle(mainVerticle)
 				.onSuccess(id -> System.out.print("Deployment verticle id " + id))
 				.onFailure(error -> System.out.print("Failed deployment verticle ".concat(error.getMessage())));
-
-
 	}
 }
