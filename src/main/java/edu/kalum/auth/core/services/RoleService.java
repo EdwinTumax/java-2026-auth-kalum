@@ -1,5 +1,6 @@
 package edu.kalum.auth.core.services;
 
+import edu.kalum.auth.core.dtos.RoleCreateDTO;
 import edu.kalum.auth.core.model.Role;
 import edu.kalum.auth.core.repository.RoleRepository;
 import io.vertx.core.Future;
@@ -18,5 +19,6 @@ public class RoleService {
         return roleRepository.findAll();
     }
     public Future<Role> findByName(String name) { return roleRepository.findByName(name); }
-
+    public Future<Role> findById(String id) { return  roleRepository.findyId(id);}
+    public Future<String> create(RoleCreateDTO role) { return roleRepository.save(role);}
 }

@@ -1,16 +1,18 @@
 package edu.kalum.auth.core.repository;
 
+import edu.kalum.auth.core.dtos.RoleCreateDTO;
 import edu.kalum.auth.core.model.Role;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class RoleRepository {
     private final MySQLPool client;
@@ -58,6 +60,42 @@ public class RoleRepository {
                     role.setRoleId(row.getString("role_id"));
                     role.setName(row.getString("name"));
                     promise.complete(role);
+                });
+        return promise.future();
+    }
+
+    public Future<Role> findyId(String id) {
+        Promise<Role> promise = Promise.promise();
+        client.preparedQuery("select role_id, name from roles where role_id = ?")
+                .execute(Tuple.of(id), asyncResult -> {
+                    if(asyncResult.failed()) {
+                        promise.fail(asyncResult.cause());
+                        return;
+                    }
+                    RowSet<Row> rows = asyncResult.result();
+                    if(!rows.iterator().hasNext()) {
+                        promise.complete(null);
+                        return;
+                    }
+                    Row row = rows.iterator().next();
+                    Role role = new Role();
+                    role.setRoleId(row.getString("role_id"));
+                    role.setName(row.getString("name"));
+                    promise.complete(role);
+                });
+        return promise.future();
+    }
+
+    public Future<String> save(RoleCreateDTO role) {
+        Promise<String> promise = Promise.promise();
+        String id = UUID.randomUUID().toString();
+        client.preparedQuery("insert into roles (role_id, name) values (?,?)")
+                .execute(Tuple.of(id, role.getName()), asyncResult -> {
+                    if(asyncResult.failed()) {
+                        promise.fail(asyncResult.cause());
+                        return;
+                    }
+                    promise.complete(id);
                 });
         return promise.future();
     }
