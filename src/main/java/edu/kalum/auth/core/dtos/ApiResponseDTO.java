@@ -1,5 +1,6 @@
 package edu.kalum.auth.core.dtos;
 
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -20,6 +21,22 @@ public class ApiResponseDTO {
                 .put("success",true)
                 .put("message","Created successfully")
                 .put("data", data == null ? null : wrap(data))
+                .put("errors",(Object) null);
+    }
+
+    public static JsonObject updated(Object data) {
+        return new JsonObject()
+                .put("success",true)
+                .put("message","Updated successfully")
+                .put("data", data == null ? null : wrap(data))
+                .put("errors",(Object) null);
+    }
+
+    public static JsonObject deleted() {
+        return new JsonObject()
+                .put("success",true)
+                .put("message","Deleted successfully")
+                .put("data", (Object) null)
                 .put("errors",(Object) null);
     }
 

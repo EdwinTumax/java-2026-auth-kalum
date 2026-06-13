@@ -2,8 +2,10 @@ package edu.kalum.auth.core.verticles;
 
 import edu.kalum.auth.core.config.MySQLPoolConfig;
 import edu.kalum.auth.core.repository.RoleRepository;
+import edu.kalum.auth.core.repository.UserRepository;
 import edu.kalum.auth.core.routers.ApiRouter;
 import edu.kalum.auth.core.services.RoleService;
+import edu.kalum.auth.core.services.UserService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
@@ -17,12 +19,14 @@ public class MainVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) {
         MySQLPool client = MySQLPoolConfig.createPool(vertx);
         RoleRepository roleRepository = new RoleRepository(client);
+        UserRepository userRepository = new UserRepository(client);
         RoleService roleService = new RoleService(roleRepository);
-        Router router = ApiRouter.create(roleService, vertx);
+        UserService userService = new UserService(userRepository);
+        Router router = ApiRouter.create(roleService, userService, vertx);
 
         vertx.createHttpServer()
                 .requestHandler(router)
-                .listen(9080)
+                .listen(9088)
                 .onSuccess(server -> {
                     System.out.print("Api running on http://localhost:9080");
                 }).onFailure(startPromise::fail);

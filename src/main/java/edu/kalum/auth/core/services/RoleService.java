@@ -21,4 +21,6 @@ public class RoleService {
     public Future<Role> findByName(String name) { return roleRepository.findByName(name); }
     public Future<Role> findById(String id) { return  roleRepository.findyId(id);}
     public Future<String> create(RoleCreateDTO role) { return roleRepository.save(role);}
+    public Future<Void> delete(String id) { return roleRepository.delete(id);}
+    public Future<Void> update(Role role) { return roleRepository.update(role); }
 }

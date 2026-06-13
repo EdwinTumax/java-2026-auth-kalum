@@ -9,6 +9,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 public class RoleHandler {
+    private final String CONTENT_TYPE = "Content-Type";
+    private final String APPLICATION_JSON = "application/json";
     private final RoleService roleService;
 
     public RoleHandler(RoleService roleService) {
@@ -55,7 +57,7 @@ public class RoleHandler {
     }
 
     public void create(RoutingContext ctx) {
-        JsonObject body = ctx.getBodyAsJson();
+        JsonObject body = ctx.body().asJsonObject();
         if(body == null) {
             ctx.response().setStatusCode(400).putHeader("Content-Type","application/json").end(ApiResponseDTO.error("Bad request", "Empty body").encode());
             return;
@@ -68,4 +70,45 @@ public class RoleHandler {
                         .setStatusCode(503).end(ApiResponseDTO.error("Error creating role", error.getMessage()).encode()));
 
     }
+
+    public void update(RoutingContext ctx) {
+        String id = ctx.pathParam("id");
+        JsonObject body = ctx.body().asJsonObject();
+        if(body == null) {
+            ctx.response().setStatusCode(400).putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                .end(ApiResponseDTO.error("Bad request", "Empty body").encode());
+            return;
+        }
+        roleService.findById(id).onSuccess(result -> {
+            if(result == null) {
+                ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE,APPLICATION_JSON).end(ApiResponseDTO.error("Not found","Not exists row").encode());
+                return;
+            }
+            result.setName(body.getString("name"));
+            roleService.update(result)
+                    .onSuccess(v -> ctx.response().setStatusCode(204).putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                            .end(ApiResponseDTO.updated(new JsonObject().put("id",id)).encode()))
+                    .onFailure(e -> ctx.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                            .setStatusCode(503).end(ApiResponseDTO.error("Error updating role", e.getMessage())
+                                    .encode()));
+        });
+    }
+
+    public void delete(RoutingContext ctx) {
+        String id = ctx.pathParam("id");
+        roleService.findById(id).onSuccess(result -> {
+            if(result == null) {
+                ctx.response().setStatusCode(404).putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .end(ApiResponseDTO.error("Not found", "Not exists row with id ".concat(id)).encode());
+                return;
+            }
+            roleService.delete(id)
+                    .onSuccess(v -> ctx.response().setStatusCode(204).putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                            .end(ApiResponseDTO.deleted().encode()))
+                    .onFailure(e -> ctx.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                            .setStatusCode(503).end(ApiResponseDTO.error("Error deleting role", e.getMessage())
+                                    .encode()));
+        });
+    }
+
 }

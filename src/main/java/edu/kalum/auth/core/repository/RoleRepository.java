@@ -100,4 +100,28 @@ public class RoleRepository {
         return promise.future();
     }
 
+    public Future<Void> delete(String id) {
+        Promise<Void> promise = Promise.promise();
+        client.preparedQuery("delete from roles where role_id = ?")
+                .execute(Tuple.of(id), asyncResult -> {
+                    if(asyncResult.failed()) {
+                        promise.fail(asyncResult.cause());
+                    }
+                    promise.complete();
+                });
+        return promise.future();
+    }
+
+    public Future<Void> update(Role role) {
+        Promise<Void> promise = Promise.promise();
+        client.preparedQuery("update roles set name = ? where role_id = ?")
+                .execute(Tuple.of(role.getName(), role.getRoleId()), asyncResult -> {
+                    if(asyncResult.failed()) {
+                        promise.fail(asyncResult.cause());
+                    }
+                    promise.complete();
+                });
+        return promise.future();
+    }
+
 }
