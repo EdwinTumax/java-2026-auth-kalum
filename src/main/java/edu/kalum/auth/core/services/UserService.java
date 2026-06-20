@@ -14,5 +14,17 @@ public class UserService {
     }
     public Future<List<JsonObject>> findAll() { return userRepository.findAll(); }
 
+    public Future<String> create(JsonObject body) {
+        return userRepository.save(body);
+    }
+
+    public Future<Void> update(String userId, JsonObject body) {
+        return userRepository.udpate(userId,body);
+    }
+
+    public Future<Void> delete(String userId) {
+        return userRepository.delete(userId);
+    }
+
 }
 

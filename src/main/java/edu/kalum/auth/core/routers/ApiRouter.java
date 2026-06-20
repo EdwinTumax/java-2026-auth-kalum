@@ -26,6 +26,9 @@ public class ApiRouter {
 
         //Users
         router.get(API_PATH + "/users").handler(userHandler::getAll);
+        router.post(API_PATH + "/users").handler(userHandler::create);
+        router.put(API_PATH + "/users/:userId").handler(userHandler::update);
+        router.delete(API_PATH + "/users/:userId").handler(userHandler::remove);
         return router;
     }
 }

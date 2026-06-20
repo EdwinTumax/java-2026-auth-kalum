@@ -3,6 +3,7 @@ package edu.kalum.auth.core.handler;
 import edu.kalum.auth.core.dtos.ApiResponseDTO;
 import edu.kalum.auth.core.services.UserService;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 public class UserHandler {
@@ -25,5 +26,62 @@ public class UserHandler {
                             .setStatusCode(503)
                             .end(ApiResponseDTO.error("Error fetching users", error.getMessage()).encode()));
         });
+    }
+
+    public void create(RoutingContext routingContext) {
+        JsonObject body = routingContext.body().asJsonObject();
+        if(body == null) {
+            routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                    .setStatusCode(400).end(ApiResponseDTO.error("Bad request","Empty body").encode());
+            return;
+        }
+        userService.create(body)
+                .onSuccess(id -> routingContext
+                        .response()
+                            .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                            .setStatusCode(201).end(ApiResponseDTO.created(new JsonObject().put("id",id)).encode()))
+                .onFailure(error -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(503).end(ApiResponseDTO.error("Error creating user",error.getMessage()).encode()));
+    }
+
+    public void update(RoutingContext routingContext) {
+        String userId = routingContext.pathParam("userId");
+        JsonObject body = routingContext.body().asJsonObject();
+        if(body == null) {
+            routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                    .setStatusCode(400).end(ApiResponseDTO.error("Bad request", "Empty body").encode());
+            return;
+        }
+        userService.update(userId,body)
+                .onSuccess( v -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .end(ApiResponseDTO.updated(new JsonObject().put("id",userId))
+                                .encode()))
+                .onFailure(error -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .end(ApiResponseDTO.error("Error updating user", error.getMessage())
+                                .encode()));
+    }
+
+    public void remove(RoutingContext routingContext) {
+        String userId = routingContext.pathParam("userId");
+        if(userId == null || userId.isEmpty()) {
+            routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                    .setStatusCode(400).end(ApiResponseDTO.error("Bad Request", "Empty userId").encode());
+        }
+        userService.delete(userId)
+                .onSuccess( v -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(204)
+                        .end(ApiResponseDTO.deleted().encode()))
+                .onFailure(error -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .end(ApiResponseDTO.error("Error remove user",error.getMessage()).encode()));
     }
 }
