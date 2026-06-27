@@ -29,6 +29,9 @@ public class ApiRouter {
         router.post(API_PATH + "/users").handler(userHandler::create);
         router.put(API_PATH + "/users/:userId").handler(userHandler::update);
         router.delete(API_PATH + "/users/:userId").handler(userHandler::remove);
+
+        //Account
+        router.post(API_PATH+ "/account/login").handler(userHandler::login);
         return router;
     }
 }

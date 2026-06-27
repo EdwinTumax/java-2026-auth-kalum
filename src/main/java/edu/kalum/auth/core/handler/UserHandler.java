@@ -28,6 +28,20 @@ public class UserHandler {
         });
     }
 
+    public void login(RoutingContext routingContext) {
+        JsonObject body = routingContext.body().asJsonObject();
+        if(body == null) {
+            routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON).setStatusCode(400).end(ApiResponseDTO.error("Bad request","Empty Body").encode());
+            return;
+        }
+        userService.findByUsernameAndPassword(body)
+                .onSuccess(credentials -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(201).end(ApiResponseDTO.success(credentials).encode()))
+                .onFailure( error -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(503).end(ApiResponseDTO.error("Error username and password invalid", error.getMessage()).encode()));
+    }
+
+
     public void create(RoutingContext routingContext) {
         JsonObject body = routingContext.body().asJsonObject();
         if(body == null) {

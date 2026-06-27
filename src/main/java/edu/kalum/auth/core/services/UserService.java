@@ -14,6 +14,10 @@ public class UserService {
     }
     public Future<List<JsonObject>> findAll() { return userRepository.findAll(); }
 
+    public Future<JsonObject> findByUsernameAndPassword(JsonObject body) {
+        return userRepository.findByUsernameAndPassword(body);
+    }
+
     public Future<String> create(JsonObject body) {
         return userRepository.save(body);
     }

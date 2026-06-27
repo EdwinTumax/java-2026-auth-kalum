@@ -1,14 +1,19 @@
 package edu.kalum.auth.core.repository;
 
+import edu.kalum.auth.core.services.JwtService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +24,14 @@ import java.util.stream.Stream;
 
 public class UserRepository {
     private final MySQLPool client;
+    private final PasswordEncoder passwordEncoder;
+    private final Logger logger = LoggerFactory.getLogger(UserRepository.class);
+    private JwtService jwtService;
 
-    public UserRepository(MySQLPool client) {
+    public UserRepository(MySQLPool client, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.client = client;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public Future<List<JsonObject>> findAll() {
@@ -29,7 +39,6 @@ public class UserRepository {
         client.query("select user_id, username, first_name, last_name, email, phone_number, password, application_number from users")
                 .execute(handlerResult -> {
                     if(handlerResult.failed()){
-                        System.out.println("Error query");
                         promise.fail(handlerResult.cause());
                         return;
                     }
@@ -53,6 +62,53 @@ public class UserRepository {
         return promise.future();
     }
 
+    public Future<JsonObject> findByUsernameAndPassword(JsonObject body) {
+        Promise<JsonObject> promise = Promise.promise();
+        String query = """
+                select
+                    u.user_id,
+                	u.username,
+                	u.first_name,
+                	u.last_name,
+                	u.email,
+                	u.phone_number,
+                	u.application_number,
+                	u.password,
+                	COALESCE(JSON_ARRAYAGG(JSON_OBJECT('roleId',r.role_id,'name',r.name)), JSON_ARRAY()) as roles
+                from users u
+                inner join user_roles ur on u.user_id = ur.user_id
+                inner join roles r on ur.role_id = r.role_id where u.username = ?
+                group by u.user_id
+                order by u.username
+                """;
+        client.preparedQuery(query).execute(Tuple.of(body.getString("username")), handlerResult -> {
+            if(handlerResult.failed() || handlerResult.result().size() == 0) {
+                promise.fail("Credenciales incorrectas, valide su username y password");
+                return;
+            }
+            Row row = handlerResult.result().iterator().next();
+            String passwordHash = row.getString("password");
+            if(!passwordEncoder.matches(body.getString("password"), passwordHash)) {
+                promise.fail("Credential failed");
+                return;
+            }
+            JsonObject user = new JsonObject();
+            user.put("userId",row.getString("user_id"));
+            user.put("username", row.getString("username"));
+            user.put("firstName", row.getString("first_name"));
+            user.put("lastName", row.getString("last_name"));
+            user.put("email", row.getString("email"));
+            user.put("phoneNumber", row.getString("phone_number"));
+            user.put("applicationNumber", row.getString("application_number"));
+            Object roles = row.getValue("roles");
+            String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
+                        .collect(Collectors.joining(","));
+            user.put("roles", rolesAsString);
+            promise.complete(jwtService.generateToken(user));
+        });
+        return  promise.future();
+    }
+
     public Future<String> save(JsonObject body) {
         Promise promise = Promise.promise();
         String userId = UUID.randomUUID().toString();
@@ -65,7 +121,7 @@ public class UserRepository {
                 body.getString("lastName"),
                 body.getString("email"),
                 body.getString("phoneNumber"),
-                body.getString("password"), "0"), handlerResult -> {
+                passwordEncoder.encode(body.getString("password")), "0"), handlerResult -> {
             if(handlerResult.failed()) {
                 promise.fail(handlerResult.cause());
                 return;
