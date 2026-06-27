@@ -18,6 +18,14 @@ public class UserService {
         return userRepository.findByUsernameAndPassword(body);
     }
 
+    public Future<JsonObject> createUserWithToken(JsonObject body) {
+        return userRepository.createUserWithToken(body);
+    }
+
+    public Future<Void> addRole(String userId, String roleId) {
+        return userRepository.addRoleToUser(userId,roleId);
+    }
+
     public Future<String> create(JsonObject body) {
         return userRepository.save(body);
     }

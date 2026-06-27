@@ -41,6 +41,28 @@ public class UserHandler {
                         .setStatusCode(503).end(ApiResponseDTO.error("Error username and password invalid", error.getMessage()).encode()));
     }
 
+    public void createUserWithToken(RoutingContext routingContext) {
+        JsonObject body = routingContext.body().asJsonObject();
+        if(body == null){
+            routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                    .setStatusCode(400).end(ApiResponseDTO.error("Bad request","Empty body").encode());
+            return;
+        }
+        userService.createUserWithToken(body)
+                .onSuccess(handlerResponse -> routingContext
+                        .response()
+                        .putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(201).end(ApiResponseDTO.created(handlerResponse).encode()))
+                .onFailure(error -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
+                        .setStatusCode(503).end(ApiResponseDTO.error("Error al momento de crear el usuario",error.getMessage()).encode()));
+    }
+
+    public void addRole(RoutingContext routingContext) {
+        String userId = routingContext.pathParam("userId");
+        String roleId = routingContext.pathParam("roleId");
+        userService.addRole(userId,roleId).onSuccess(result -> routingContext.response().setStatusCode(204).putHeader(CONTENT_TYPE,APPLICATION_JSON).end(ApiResponseDTO.updated(null).encode()))
+                .onFailure(error -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON).setStatusCode(503).end(ApiResponseDTO.error("Error adding role", error.getMessage()).encode()));
+    }
 
     public void create(RoutingContext routingContext) {
         JsonObject body = routingContext.body().asJsonObject();

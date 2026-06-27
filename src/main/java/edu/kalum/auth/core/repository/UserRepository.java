@@ -109,6 +109,65 @@ public class UserRepository {
         return  promise.future();
     }
 
+    public Future<Void> addRoleToUser(String userId, String roleId) {
+        Promise<Void> promise = Promise.promise();
+        client.preparedQuery("insert into user_roles (user_id,role_id) values (?,?)")
+                .execute(Tuple.of(userId,roleId), handlerResult -> {
+                    if(handlerResult.failed()) {
+                        promise.fail(handlerResult.cause());
+                        return;
+                    }
+                    promise.complete();
+                });
+        return promise.future();
+    }
+
+    public Future<JsonObject> createUserWithToken(JsonObject body) {
+        Promise promise = Promise.promise();
+        String userId = UUID.randomUUID().toString();
+        client.preparedQuery("""
+              INSERT into users (user_id, username, first_name, last_name, email, phone_number, password, application_number) values (?,?,?,?,?,?,?,?)
+        """).execute(Tuple.of(
+                userId,
+                body.getString("username"),
+                body.getString("firstName"),
+                body.getString("lastName"),
+                body.getString("email"),
+                body.getString("phoneNumber"),
+                passwordEncoder.encode(body.getString("password")), "0"), handlerResult -> {
+            if(handlerResult.failed()) {
+                promise.fail(handlerResult.cause());
+                return;
+            }
+            String roleDefault = "ROLE_USER";
+            List<String> roles =  new ArrayList<String>();
+            roles.add(roleDefault);
+            getRoleByName(roles).onComplete(responseRoles -> {
+                if(responseRoles.succeeded()) {
+                    if(responseRoles.result() != null && !responseRoles.result().isEmpty()) {
+                        List<Tuple> batch = responseRoles.result().stream().map(roleId -> Tuple.of(userId,roleId))
+                                .collect(Collectors.toList());
+                        client.preparedQuery("insert into user_roles (user_id,role_id) values (?,?)")
+                                .executeBatch(batch)
+                                .onComplete(batchResponse -> {
+                                    if(batchResponse.failed()) {
+                                        promise.fail(batchResponse.cause());
+                                        return;
+                                    }
+                                    body.put("applicationNumber","0");
+                                    body.put("roles",roleDefault);
+                                    body.remove("password");
+                                    promise.complete(jwtService.generateToken(body));
+                                });
+                    } else {
+                        promise.complete();
+                    }
+                }
+            });
+        });
+        return promise.future();
+    }
+
     public Future<String> save(JsonObject body) {
         Promise promise = Promise.promise();
         String userId = UUID.randomUUID().toString();
