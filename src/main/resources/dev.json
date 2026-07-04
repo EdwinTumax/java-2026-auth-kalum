@@ -1,0 +1,6 @@
+{
+  "localServer": {
+    "apiKey" : "MI_LLAVE_SECRETA_PARA_GENERAR_TOKEN",
+    "roleDefault": "ROLE_USER"
+  }
+}

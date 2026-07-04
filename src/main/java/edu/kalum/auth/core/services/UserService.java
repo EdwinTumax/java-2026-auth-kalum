@@ -12,7 +12,22 @@ public class UserService {
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    public Future<List<JsonObject>> findAll() { return userRepository.findAll(); }
+
+    public Future<List<JsonObject>> findAll() {
+        return userRepository.findAll();
+    }
+
+    public Future<JsonObject> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public Future<JsonObject> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
+    public Future<JsonObject> findById(String userId) {
+        return userRepository.findById(userId);
+    };
 
     public Future<JsonObject> findByUsernameAndPassword(JsonObject body) {
         return userRepository.findByUsernameAndPassword(body);
@@ -22,8 +37,12 @@ public class UserService {
         return userRepository.createUserWithToken(body);
     }
 
-    public Future<Void> addRole(String userId, String roleId) {
-        return userRepository.addRoleToUser(userId,roleId);
+    public Future<Void> addRoles(String userId, String roles) {
+        return userRepository.addRolesToUser(userId,roles);
+    }
+
+    public Future<Void> removeRoles(String userId, String roles) {
+        return userRepository.removeRolesToUser(userId,roles);
     }
 
     public Future<String> create(JsonObject body) {

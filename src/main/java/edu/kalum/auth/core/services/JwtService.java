@@ -3,6 +3,7 @@ package edu.kalum.auth.core.services;
 import edu.kalum.auth.core.helpers.shared.Utils;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.vertx.core.json.JsonObject;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +13,12 @@ import java.util.Date;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Jwts;
 @Service
+@Data
 public class JwtService {
     @Autowired
     private Utils utils;
-
-    private static final String SECRET_KEY = "MI_LLAVE_SECRETA_PARA_GENERAR_TOKEN";
+    private String secretKey;
     private static final long EXPIRATION_MS = 1000 * 60 * 60;
-    private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     public JsonObject generateToken(JsonObject user) {
         Date expiration = new Date(System.currentTimeMillis() + EXPIRATION_MS);
@@ -30,7 +30,7 @@ public class JwtService {
                 .claim("role",user.getString("roles"))
                 .setIssuedAt(new Date())
                 .setExpiration(expiration)
-                .signWith(key, SignatureAlgorithm.HS256)
+                .signWith(Keys.hmacShaKeyFor(this.secretKey.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
         return new JsonObject().put("token",token).put("expiration", utils.formatToIsoUTC(expiration));
     }

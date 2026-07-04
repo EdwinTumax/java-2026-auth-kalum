@@ -11,6 +11,7 @@ import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,29 +21,188 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class UserRepository {
     private final MySQLPool client;
     private final PasswordEncoder passwordEncoder;
     private final Logger logger = LoggerFactory.getLogger(UserRepository.class);
     private JwtService jwtService;
+    private RoleRepository roleRepository;
+    private String apiKey;
+    private String roleDefault;
 
-    public UserRepository(MySQLPool client, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserRepository(MySQLPool client, PasswordEncoder passwordEncoder, JwtService jwtService, RoleRepository roleRepository
+            , String apiKey, String roleDefault) {
         this.client = client;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.roleRepository = roleRepository;
+        this.apiKey = apiKey;
+        this.roleDefault = roleDefault;
+    }
+
+    public Future<JsonObject> findByEmail(String email) {
+        Promise<JsonObject> promise = Promise.promise();
+        client.preparedQuery("""
+                select
+                    u.user_id,
+                	u.username,
+                	u.first_name,
+                	u.last_name,
+                	u.email,
+                	u.phone_number,
+                	u.application_number,
+                	COALESCE(JSON_ARRAYAGG(JSON_OBJECT('roleId',r.role_id,'name',r.name)), JSON_ARRAY()) as roles
+                from users u
+                left join user_roles ur on u.user_id = ur.user_id
+                left join roles r on ur.role_id = r.role_id
+                where u.email = ?
+                group by u.user_id
+                """)
+                .execute(Tuple.of(email), handlerResult -> {
+                    if(handlerResult.failed()){
+                        promise.fail(handlerResult.cause());
+                        return;
+                    }
+                    RowSet<Row> rows = handlerResult.result();
+                    if(!rows.iterator().hasNext()) {
+                        promise.complete(null);
+                        return;
+                    }
+                    Row element = rows.iterator().next();
+                    JsonObject user = new JsonObject();
+                    user.put("userId",element.getString("user_id"));
+                    user.put("username", element.getString("username"));
+                    user.put("firstName", element.getString("first_name"));
+                    user.put("last_name", element.getString("last_name"));
+                    user.put("email", element.getString("email"));
+                    user.put("phoneNumber", element.getString("phone_number"));
+                    user.put("applicationNumber",element.getString("application_number"));
+                    Object roles = element.getValue("roles");
+                    String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
+                            .collect(Collectors.joining(","));
+                    user.put("roles", rolesAsString);
+                    promise.complete(user);
+                });
+        return promise.future();
+    }
+
+    public Future<JsonObject> findByUsername(String username) {
+        Promise<JsonObject> promise = Promise.promise();
+        client.preparedQuery("""
+                select
+                    u.user_id,
+                	u.username,
+                	u.first_name,
+                	u.last_name,
+                	u.email,
+                	u.phone_number,
+                	u.application_number,
+                	COALESCE(JSON_ARRAYAGG(JSON_OBJECT('roleId',r.role_id,'name',r.name)), JSON_ARRAY()) as roles
+                from users u
+                left join user_roles ur on u.user_id = ur.user_id
+                left join roles r on ur.role_id = r.role_id
+                where u.username = ?
+                group by u.user_id
+                """)
+                .execute(Tuple.of(username), handlerResult -> {
+                    if(handlerResult.failed()){
+                        promise.fail(handlerResult.cause());
+                        return;
+                    }
+                    RowSet<Row> rows = handlerResult.result();
+                    if(!rows.iterator().hasNext()) {
+                        promise.complete(null);
+                        return;
+                    }
+                    Row element = rows.iterator().next();
+                    JsonObject user = new JsonObject();
+                    user.put("userId",element.getString("user_id"));
+                    user.put("username", element.getString("username"));
+                    user.put("firstName", element.getString("first_name"));
+                    user.put("last_name", element.getString("last_name"));
+                    user.put("email", element.getString("email"));
+                    user.put("phoneNumber", element.getString("phone_number"));
+                    user.put("applicationNumber",element.getString("application_number"));
+                    Object roles = element.getValue("roles");
+                    String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
+                            .collect(Collectors.joining(","));
+                    user.put("roles", rolesAsString);
+                    promise.complete(user);
+                });
+        return promise.future();
+    }
+
+    public Future<JsonObject> findById(String userId) {
+        Promise<JsonObject> promise = Promise.promise();
+        client.preparedQuery("""
+                select
+                    u.user_id,
+                	u.username,
+                	u.first_name,
+                	u.last_name,
+                	u.email,
+                	u.phone_number,
+                	u.application_number,
+                	COALESCE(JSON_ARRAYAGG(JSON_OBJECT('roleId',r.role_id,'name',r.name)), JSON_ARRAY()) as roles
+                from users u
+                left join user_roles ur on u.user_id = ur.user_id
+                left join roles r on ur.role_id = r.role_id
+                where u.user_id = ?
+                group by u.user_id
+                """)
+                .execute(Tuple.of(userId), handlerResult -> {
+                    if(handlerResult.failed()){
+                        promise.fail(handlerResult.cause());
+                        return;
+                    }
+                    RowSet<Row> rows = handlerResult.result();
+                    if(!rows.iterator().hasNext()) {
+                        promise.complete(null);
+                        return;
+                    }
+                    Row element = rows.iterator().next();
+                    JsonObject user = new JsonObject();
+                    user.put("userId",element.getString("user_id"));
+                    user.put("username", element.getString("username"));
+                    user.put("firstName", element.getString("first_name"));
+                    user.put("last_name", element.getString("last_name"));
+                    user.put("email", element.getString("email"));
+                    user.put("phoneNumber", element.getString("phone_number"));
+                    user.put("applicationNumber",element.getString("application_number"));
+                    Object roles = element.getValue("roles");
+                    String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
+                            .collect(Collectors.joining(","));
+                    user.put("roles", rolesAsString);
+                    promise.complete(user);
+                });
+        return promise.future();
     }
 
     public Future<List<JsonObject>> findAll() {
         Promise<List<JsonObject>> promise = Promise.promise();
-        client.query("select user_id, username, first_name, last_name, email, phone_number, password, application_number from users")
+        client.query("""
+                select
+                    u.user_id,
+                	u.username,
+                	u.first_name,
+                	u.last_name,
+                	u.email,
+                	u.phone_number,
+                	u.application_number,
+                	u.password,
+                	COALESCE(JSON_ARRAYAGG(JSON_OBJECT('roleId',r.role_id,'name',r.name)), JSON_ARRAY()) as roles
+                from users u
+                left join user_roles ur on u.user_id = ur.user_id
+                left join roles r on ur.role_id = r.role_id
+                group by u.user_id
+                order by u.username
+                """)
                 .execute(handlerResult -> {
                     if(handlerResult.failed()){
                         promise.fail(handlerResult.cause());
                         return;
                     }
-                    System.out.println(handlerResult.result().size());
                     RowSet<Row> rows = handlerResult.result();
                     List<JsonObject> users = new ArrayList<>();
                     rows.forEach(element -> {
@@ -53,8 +213,11 @@ public class UserRepository {
                         user.put("last_name", element.getString("last_name"));
                         user.put("email", element.getString("email"));
                         user.put("phoneNumber", element.getString("phone_number"));
-                        user.put("password", element.getString("password"));
                         user.put("applicationNumber",element.getString("application_number"));
+                        Object roles = element.getValue("roles");
+                        String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
+                                .collect(Collectors.joining(","));
+                        user.put("roles", rolesAsString);
                         users.add(user);
                     });
                     promise.complete(users);
@@ -104,22 +267,40 @@ public class UserRepository {
             String rolesAsString = ((JsonArray)roles).stream().map( r -> ((JsonObject)r).getString("name"))
                         .collect(Collectors.joining(","));
             user.put("roles", rolesAsString);
+            jwtService.setSecretKey(apiKey);
             promise.complete(jwtService.generateToken(user));
         });
         return  promise.future();
     }
 
-    public Future<Void> addRoleToUser(String userId, String roleId) {
-        Promise<Void> promise = Promise.promise();
-        client.preparedQuery("insert into user_roles (user_id,role_id) values (?,?)")
-                .execute(Tuple.of(userId,roleId), handlerResult -> {
-                    if(handlerResult.failed()) {
-                        promise.fail(handlerResult.cause());
-                        return;
-                    }
-                    promise.complete();
-                });
-        return promise.future();
+    public Future<Void> addRolesToUser(String userId, String roles) {
+        List<Future> futures = new ArrayList<>();
+        String[] names = roles.split(",");
+        for (String name : names)
+        {
+            Future<Void> future = this.roleRepository.findByName(name.trim())
+                    .compose(role -> client.preparedQuery("insert into user_roles (user_id,role_id) values (?,?)")
+                            .execute(Tuple.of(userId,role.getRoleId()))
+                            .mapEmpty()
+                    );
+            futures.add(future);
+        }
+        return CompositeFuture.all(futures).mapEmpty();
+    }
+
+    public Future<Void> removeRolesToUser(String userId, String roles) {
+        List<Future> futures = new ArrayList<>();
+        String[] names = roles.split(",");
+        for(String name : names) {
+            Future<Void> future = this.roleRepository.findByName(name.trim())
+                    .compose(role ->
+                            client.preparedQuery("delete from user_roles where user_id = ? and role_id = ? ")
+                                    .execute(Tuple.of(userId,role.getRoleId()))
+                                    .mapEmpty()
+                            );
+            futures.add(future);
+        }
+        return CompositeFuture.all(futures).mapEmpty();
     }
 
     public Future<JsonObject> createUserWithToken(JsonObject body) {
@@ -139,7 +320,6 @@ public class UserRepository {
                 promise.fail(handlerResult.cause());
                 return;
             }
-            String roleDefault = "ROLE_USER";
             List<String> roles =  new ArrayList<String>();
             roles.add(roleDefault);
             getRoleByName(roles).onComplete(responseRoles -> {
@@ -157,6 +337,7 @@ public class UserRepository {
                                     body.put("applicationNumber","0");
                                     body.put("roles",roleDefault);
                                     body.remove("password");
+                                    jwtService.setSecretKey(apiKey);
                                     promise.complete(jwtService.generateToken(body));
                                 });
                     } else {
@@ -186,7 +367,7 @@ public class UserRepository {
                 return;
             }
             List<String> roles =  new ArrayList<String>();
-            roles.add("ROLE_USER");
+            roles.add(roleDefault);
             getRoleByName(roles).onComplete(responseRoles -> {
                 if(responseRoles.succeeded()) {
                     if(responseRoles.result() != null && !responseRoles.result().isEmpty()) {

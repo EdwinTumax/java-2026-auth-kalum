@@ -39,11 +39,13 @@ public class ApiRouter {
 
         //Users
         router.get(API_PATH + "/users").handler(userHandler::getAll);
+        router.get(API_PATH + "/users/search").handler(userHandler::searchByType);
+        router.get(API_PATH + "/users/:userId").handler(userHandler::getUserById);
         router.post(API_PATH + "/users").handler(userHandler::create);
-        router.post(API_PATH + "/users/:userId/role/:roleId").handler(userHandler::addRole);
+        router.post(API_PATH + "/users/:userId/roles").handler(userHandler::addRoles);
+        router.delete(API_PATH + "/users/:userId/roles").handler(userHandler::removeRoles);
         router.put(API_PATH + "/users/:userId").handler(userHandler::update);
         router.delete(API_PATH + "/users/:userId").handler(userHandler::remove);
-
 
         return router;
     }

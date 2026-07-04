@@ -26,7 +26,12 @@ public class MainVerticle extends AbstractVerticle {
     public void start(Promise<Void> startPromise) {
         MySQLPool client = MySQLPoolConfig.createPool(vertx);
         RoleRepository roleRepository = new RoleRepository(client);
-        UserRepository userRepository = new UserRepository(client, passwordEncoder, jwtService);
+        UserRepository userRepository = new UserRepository(client,
+                passwordEncoder,
+                jwtService,
+                roleRepository,
+                config().getJsonObject("localServer").getString("apiKey"),
+                config().getJsonObject("localServer").getString("roleDefault"));
         RoleService roleService = new RoleService(roleRepository);
         UserService userService = new UserService(userRepository);
         Router router = ApiRouter.create(roleService, userService, vertx);
