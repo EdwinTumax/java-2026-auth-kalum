@@ -7,6 +7,7 @@ import edu.kalum.auth.core.routers.ApiRouter;
 import edu.kalum.auth.core.services.JwtService;
 import edu.kalum.auth.core.services.RoleService;
 import edu.kalum.auth.core.services.UserService;
+import edu.kalum.logging.core.helpers.Utils;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.ext.web.Router;
@@ -21,10 +22,12 @@ public class MainVerticle extends AbstractVerticle {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private Utils utils;
 
     @Override
     public void start(Promise<Void> startPromise) {
-        MySQLPool client = MySQLPoolConfig.createPool(vertx);
+        MySQLPool client = MySQLPoolConfig.createPool(vertx, config().getJsonObject("mysqlServer"));
         RoleRepository roleRepository = new RoleRepository(client);
         UserRepository userRepository = new UserRepository(client,
                 passwordEncoder,
@@ -34,13 +37,13 @@ public class MainVerticle extends AbstractVerticle {
                 config().getJsonObject("localServer").getString("roleDefault"));
         RoleService roleService = new RoleService(roleRepository);
         UserService userService = new UserService(userRepository);
-        Router router = ApiRouter.create(roleService, userService, vertx);
+        Router router = ApiRouter.create(roleService, userService, vertx, utils);
 
         vertx.createHttpServer()
                 .requestHandler(router)
-                .listen(9088)
+                .listen(config().getJsonObject("localServer").getInteger("port"))
                 .onSuccess(server -> {
-                    System.out.print("Api running on http://localhost:9080");
+                    System.out.print("Api running on http://localhost:".concat(String.valueOf(config().getJsonObject("localServer").getLong("port"))));
                 }).onFailure(startPromise::fail);
     }
 }

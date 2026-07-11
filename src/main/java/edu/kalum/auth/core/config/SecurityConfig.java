@@ -1,5 +1,6 @@
 package edu.kalum.auth.core.config;
 
+import edu.kalum.logging.core.helpers.Utils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

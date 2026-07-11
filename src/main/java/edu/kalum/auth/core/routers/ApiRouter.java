@@ -4,6 +4,7 @@ import edu.kalum.auth.core.handler.RoleHandler;
 import edu.kalum.auth.core.handler.UserHandler;
 import edu.kalum.auth.core.services.RoleService;
 import edu.kalum.auth.core.services.UserService;
+import edu.kalum.logging.core.helpers.Utils;
 import io.vertx.core.Vertx;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -13,7 +14,8 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 
 public class ApiRouter {
-    public static Router create(RoleService roleService, UserService userService, Vertx vertx) {
+
+    public static Router create(RoleService roleService, UserService userService, Vertx vertx, Utils utils) {
         final String API_PATH = "/auth-management/v1";
         JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions().setAlgorithm("HS256")
@@ -22,7 +24,7 @@ public class ApiRouter {
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
         RoleHandler roleHandler = new RoleHandler(roleService);
-        UserHandler userHandler = new UserHandler(userService);
+        UserHandler userHandler = new UserHandler(userService, utils);
 
         //Account
         router.post(API_PATH + "/account/login").handler(userHandler::login);

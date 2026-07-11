@@ -1,6 +1,15 @@
 {
   "localServer": {
     "apiKey" : "MI_LLAVE_SECRETA_PARA_GENERAR_TOKEN",
-    "roleDefault": "ROLE_USER"
+    "roleDefault": "ROLE_USER",
+    "port": 9088
+  },
+  "mysqlServer": {
+    "host": "localhost",
+    "port": 3306,
+    "dataBase": "kalum_dev_2026_auth",
+    "user": "kalum_user_dev",
+    "password": "K@alum.dev",
+    "poolMaxSize": 10
   }
 }

@@ -1,13 +1,12 @@
 package edu.kalum.auth.core.services;
 
-import edu.kalum.auth.core.helpers.shared.Utils;
+
+import edu.kalum.logging.core.helpers.Utils;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.vertx.core.json.JsonObject;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.security.Key;
 import java.util.Date;
 
 import io.jsonwebtoken.security.Keys;
@@ -32,6 +31,6 @@ public class JwtService {
                 .setExpiration(expiration)
                 .signWith(Keys.hmacShaKeyFor(this.secretKey.getBytes()), SignatureAlgorithm.HS256)
                 .compact();
-        return new JsonObject().put("token",token).put("expiration", utils.formatToIsoUTC(expiration));
+        return new JsonObject().put("token",token).put("expiration", utils.getDateWithFormat(expiration));
     }
 }

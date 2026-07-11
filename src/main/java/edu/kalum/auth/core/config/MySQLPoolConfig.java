@@ -1,19 +1,20 @@
 package edu.kalum.auth.core.config;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 
 public class MySQLPoolConfig {
-    public static MySQLPool createPool(Vertx vertx) {
+    public static MySQLPool createPool(Vertx vertx, JsonObject config) {
         MySQLConnectOptions connectOptions = new MySQLConnectOptions()
-                .setHost("localhost")
-                .setPort(3306)
-                .setDatabase("kalum_dev_2026_auth")
-                .setUser("kalum_user_dev")
-                .setPassword("K@alum.dev");
-        PoolOptions poolOptions = new PoolOptions().setMaxSize(10);
+                .setHost(config.getString("host"))
+                .setPort(config.getInteger("port"))
+                .setDatabase(config.getString("dataBase"))
+                .setUser(config.getString("user"))
+                .setPassword(config.getString("password"));
+        PoolOptions poolOptions = new PoolOptions().setMaxSize(config.getInteger("poolMaxSize"));
         return MySQLPool.pool(vertx,connectOptions,poolOptions);
     }
 }
