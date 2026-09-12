@@ -103,7 +103,7 @@ public class UserHandler {
                 .onSuccess(credentials -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
                         .setStatusCode(201).end(ApiResponseDTO.success(credentials).encode()))
                 .onFailure( error -> routingContext.response().putHeader(CONTENT_TYPE,APPLICATION_JSON)
-                        .setStatusCode(503).end(ApiResponseDTO.error("Error username and password invalid", error.getMessage()).encode()));
+                        .setStatusCode(401).end(ApiResponseDTO.error("Error username and password invalid", error.getMessage()).encode()));
     }
 
     public void createUserWithToken(RoutingContext routingContext) {
