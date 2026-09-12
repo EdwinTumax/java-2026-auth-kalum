@@ -6,22 +6,38 @@ import edu.kalum.auth.core.services.RoleService;
 import edu.kalum.auth.core.services.UserService;
 import edu.kalum.logging.core.helpers.Utils;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.auth.jwt.JWTAuth;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 
 public class ApiRouter {
 
     public static Router create(RoleService roleService, UserService userService, Vertx vertx, Utils utils) {
+
         final String API_PATH = "/auth-management/v1";
         JWTAuth jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions()
                 .addPubSecKey(new PubSecKeyOptions().setAlgorithm("HS256")
                         .setBuffer("MI_LLAVE_SECRETA_PARA_GENERAR_TOKEN")));
 
         Router router = Router.router(vertx);
+
+        router.route().handler(CorsHandler.create().addOrigin("*")
+                .allowedMethod(HttpMethod.GET)
+                .allowedMethod(HttpMethod.POST)
+                .allowedMethod(HttpMethod.PUT)
+                .allowedMethod(HttpMethod.DELETE)
+                .allowedMethod(HttpMethod.PATCH)
+                .allowedMethod(HttpMethod.OPTIONS)
+                .allowedMethod(HttpMethod.HEAD)
+                .allowedHeader("Content-Type")
+                .allowedHeader("Authorization")
+                .allowedHeader("Accept"));
+
         router.route().handler(BodyHandler.create());
         RoleHandler roleHandler = new RoleHandler(roleService);
         UserHandler userHandler = new UserHandler(userService, utils);
