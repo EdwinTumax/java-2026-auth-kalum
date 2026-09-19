@@ -74,7 +74,7 @@ public class UserRepository {
                     user.put("userId",element.getString("user_id"));
                     user.put("username", element.getString("username"));
                     user.put("firstName", element.getString("first_name"));
-                    user.put("last_name", element.getString("last_name"));
+                    user.put("lastName", element.getString("last_name"));
                     user.put("email", element.getString("email"));
                     user.put("phoneNumber", element.getString("phone_number"));
                     user.put("applicationNumber",element.getString("application_number"));
@@ -120,7 +120,7 @@ public class UserRepository {
                     user.put("userId",element.getString("user_id"));
                     user.put("username", element.getString("username"));
                     user.put("firstName", element.getString("first_name"));
-                    user.put("last_name", element.getString("last_name"));
+                    user.put("lastName", element.getString("last_name"));
                     user.put("email", element.getString("email"));
                     user.put("phoneNumber", element.getString("phone_number"));
                     user.put("applicationNumber",element.getString("application_number"));
@@ -166,7 +166,7 @@ public class UserRepository {
                     user.put("userId",element.getString("user_id"));
                     user.put("username", element.getString("username"));
                     user.put("firstName", element.getString("first_name"));
-                    user.put("last_name", element.getString("last_name"));
+                    user.put("lastName", element.getString("last_name"));
                     user.put("email", element.getString("email"));
                     user.put("phoneNumber", element.getString("phone_number"));
                     user.put("applicationNumber",element.getString("application_number"));
@@ -210,7 +210,7 @@ public class UserRepository {
                         user.put("userId",element.getString("user_id"));
                         user.put("username", element.getString("username"));
                         user.put("firstName", element.getString("first_name"));
-                        user.put("last_name", element.getString("last_name"));
+                        user.put("lastName", element.getString("last_name"));
                         user.put("email", element.getString("email"));
                         user.put("phoneNumber", element.getString("phone_number"));
                         user.put("applicationNumber",element.getString("application_number"));
